@@ -18,20 +18,24 @@ impl Chessboard {
         let mut stdout = stdout();
         stdout
             .queue(Clear(ClearType::All))?
-            .queue(cursor::MoveTo(0, 0))?;
-        println!("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐");
-        for _row in 0..8 {
-            println!(
-                "│    │    │    │    │    │    │    │    │    │\n\
-                      │    │    │    │    │    │    │    │    │    │\n\
-                      ├────┼────┼────┼────┼────┼────┼────┼────┼────┤"
-            );
+            .queue(cursor::MoveTo(0, 0))?
+            .queue(Print("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐"))?;
+        for row in 0..8 {
+            stdout
+                .queue(cursor::MoveTo(0, row * 3 + 1))?
+                .queue(Print("│    │    │    │    │    │    │    │    │    │"))?
+                .queue(cursor::MoveTo(0, row * 3 + 2))?
+                .queue(Print("│    │    │    │    │    │    │    │    │    │"))?
+                .queue(cursor::MoveTo(0, row * 3 + 3))?
+                .queue(Print("├────┼────┼────┼────┼────┼────┼────┼────┼────┤"))?;
         }
-        println!(
-            "│    │    │    │    │    │    │    │    │    │\n\
-                  │    │    │    │    │    │    │    │    │    │\n\
-                  └────┴────┴────┴────┴────┴────┴────┴────┴────┘"
-        );
+        stdout
+            .queue(cursor::MoveTo(0, 8 * 3 + 1))?
+            .queue(Print("│    │    │    │    │    │    │    │    │    │"))?
+            .queue(cursor::MoveTo(0, 8 * 3 + 2))?
+            .queue(Print("│    │    │    │    │    │    │    │    │    │"))?
+            .queue(cursor::MoveTo(0, 8 * 3 + 3))?
+            .queue(Print("└────┴────┴────┴────┴────┴────┴────┴────┴────┘"))?;
         Ok(())
     }
     fn hightlight(x: u16, y: u16) -> Result<()> {
@@ -115,7 +119,7 @@ impl Chessboard {
                 }
             }
         }
-        Chessboard::hightlight(self.chosen.0 as u16, self.chosen.1 as u16);
+        Chessboard::hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
         stdout.queue(cursor::MoveTo(0, (9 * 3 + 1) as u16))?;
         Ok(())
     }
