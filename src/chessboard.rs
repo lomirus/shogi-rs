@@ -15,7 +15,7 @@ pub struct Chessboard {
 }
 
 impl Chessboard {
-    fn print_background() -> Result<()> {
+    fn print_background(&self) -> Result<()> {
         let mut stdout = stdout();
         stdout
             .queue(Clear(ClearType::All))?
@@ -39,7 +39,25 @@ impl Chessboard {
             .queue(Print("└────┴────┴────┴────┴────┴────┴────┴────┴────┘"))?;
         Ok(())
     }
-    fn hightlight(x: u16, y: u16) -> Result<()> {
+    fn print_pieces(&self) -> Result<()> {
+        let mut stdout = stdout();
+        for row in 0..self.board.len() {
+            for col in 0..self.board[0].len() {
+                if let Some(piece) = self.board[row][col] {
+                    for (i, c) in piece.r#type.to_string().char_indices() {
+                        stdout
+                            .queue(MoveTo(
+                                (col * 5 + 2) as u16,
+                                (row * 3 + 1 + i / 3) as u16,
+                            ))?
+                            .queue(Print(c))?;
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+    fn hightlight(&self, x: u16, y: u16) -> Result<()> {
         let mut stdout = stdout();
         stdout.queue(SetForegroundColor(Color::Red))?;
         stdout
@@ -104,23 +122,11 @@ impl Chessboard {
         Ok(())
     }
     pub fn print(&self) -> Result<()> {
-        Chessboard::print_background()?;
+        self.print_background()?;
+        self.print_pieces()?;
+        self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+        
         let mut stdout = stdout();
-        for row in 0..self.board.len() {
-            for col in 0..self.board[0].len() {
-                if let Some(piece) = self.board[row][col] {
-                    for (i, c) in piece.r#type.to_string().char_indices() {
-                        stdout
-                            .queue(MoveTo(
-                                (col * 5 + 2) as u16,
-                                (row * 3 + 1 + i / 3) as u16,
-                            ))?
-                            .queue(Print(c))?;
-                    }
-                }
-            }
-        }
-        Chessboard::hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
         stdout.queue(MoveTo(0, 9 * 3 + 1))?;
         stdout.flush()?;
         Ok(())
