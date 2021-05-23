@@ -39,14 +39,16 @@ impl ChessBoard {
                 if let Some(piece) = self.0[row][col] {
                     for (i, c) in piece.r#type.to_string().char_indices() {
                         stdout
-                            .queue(cursor::MoveTo((col * 5 + 2) as u16, (row * 3 + 1 + i / 3) as u16))?
+                            .queue(cursor::MoveTo(
+                                (col * 5 + 2) as u16,
+                                (row * 3 + 1 + i / 3) as u16,
+                            ))?
                             .queue(style::Print(c))?;
                     }
                 }
             }
         }
-        stdout
-            .queue(cursor::MoveTo(0, (9 * 3 + 1) as u16))?;
+        stdout.queue(cursor::MoveTo(0, (9 * 3 + 1) as u16))?;
         Ok(())
     }
 }
@@ -108,115 +110,17 @@ pub fn new() -> ChessBoard {
             }),
             None::<Piece>,
         ],
-        [
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: false,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: false,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: false,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: false,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: false,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: false,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: false,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: false,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: false,
-            }),
-        ],
-        [
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-        ],
-        [
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-        ],
-        [
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-            None::<Piece>,
-        ],
-        [
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: true,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: true,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: true,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: true,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: true,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: true,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: true,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: true,
-            }),
-            Some(Piece {
-                r#type: PieceType::Pawn,
-                side: true,
-            }),
-        ],
+        [Some(Piece {
+            r#type: PieceType::Pawn,
+            side: false,
+        }); 9],
+        [None::<Piece>; 9],
+        [None::<Piece>; 9],
+        [None::<Piece>; 9],
+        [Some(Piece {
+            r#type: PieceType::Pawn,
+            side: true,
+        }); 9],
         [
             None::<Piece>,
             Some(Piece {
