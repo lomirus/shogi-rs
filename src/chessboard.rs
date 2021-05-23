@@ -1,11 +1,12 @@
 use crate::piece::{Piece, PieceType};
 use crossterm::{
-    cursor,
+    cursor::MoveTo,
+    event::{read, Event, KeyCode, KeyModifiers},
     style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{Clear, ClearType},
     QueueableCommand, Result,
 };
-use std::io::stdout;
+use std::io::{stdout, Write};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Chessboard {
@@ -18,23 +19,23 @@ impl Chessboard {
         let mut stdout = stdout();
         stdout
             .queue(Clear(ClearType::All))?
-            .queue(cursor::MoveTo(0, 0))?
+            .queue(MoveTo(0, 0))?
             .queue(Print("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐"))?;
         for row in 0..8 {
             stdout
-                .queue(cursor::MoveTo(0, row * 3 + 1))?
+                .queue(MoveTo(0, row * 3 + 1))?
                 .queue(Print("│    │    │    │    │    │    │    │    │    │"))?
-                .queue(cursor::MoveTo(0, row * 3 + 2))?
+                .queue(MoveTo(0, row * 3 + 2))?
                 .queue(Print("│    │    │    │    │    │    │    │    │    │"))?
-                .queue(cursor::MoveTo(0, row * 3 + 3))?
+                .queue(MoveTo(0, row * 3 + 3))?
                 .queue(Print("├────┼────┼────┼────┼────┼────┼────┼────┼────┤"))?;
         }
         stdout
-            .queue(cursor::MoveTo(0, 8 * 3 + 1))?
+            .queue(MoveTo(0, 8 * 3 + 1))?
             .queue(Print("│    │    │    │    │    │    │    │    │    │"))?
-            .queue(cursor::MoveTo(0, 8 * 3 + 2))?
+            .queue(MoveTo(0, 8 * 3 + 2))?
             .queue(Print("│    │    │    │    │    │    │    │    │    │"))?
-            .queue(cursor::MoveTo(0, 8 * 3 + 3))?
+            .queue(MoveTo(0, 8 * 3 + 3))?
             .queue(Print("└────┴────┴────┴────┴────┴────┴────┴────┴────┘"))?;
         Ok(())
     }
@@ -42,7 +43,7 @@ impl Chessboard {
         let mut stdout = stdout();
         stdout.queue(SetForegroundColor(Color::Red))?;
         stdout
-            .queue(cursor::MoveTo(x * 5, y * 3))?
+            .queue(MoveTo(x * 5, y * 3))?
             .queue(if x == 0 && y == 0 {
                 Print("┌")
             } else if x == 0 {
@@ -66,17 +67,17 @@ impl Chessboard {
                 Print("┼")
             })?;
         stdout
-            .queue(cursor::MoveTo(x * 5, y * 3 + 1))?
+            .queue(MoveTo(x * 5, y * 3 + 1))?
             .queue(Print("│"))?
-            .queue(cursor::MoveTo(x * 5 + 5, y * 3 + 1))?
+            .queue(MoveTo(x * 5 + 5, y * 3 + 1))?
             .queue(Print("│"))?;
         stdout
-            .queue(cursor::MoveTo(x * 5, y * 3 + 2))?
+            .queue(MoveTo(x * 5, y * 3 + 2))?
             .queue(Print("│"))?
-            .queue(cursor::MoveTo(x * 5 + 5, y * 3 + 2))?
+            .queue(MoveTo(x * 5 + 5, y * 3 + 2))?
             .queue(Print("│"))?;
         stdout
-            .queue(cursor::MoveTo(x * 5, y * 3 + 3))?
+            .queue(MoveTo(x * 5, y * 3 + 3))?
             .queue(if x == 0 && y == 8 {
                 Print("└")
             } else if x == 0 {
@@ -110,7 +111,7 @@ impl Chessboard {
                 if let Some(piece) = self.board[row][col] {
                     for (i, c) in piece.r#type.to_string().char_indices() {
                         stdout
-                            .queue(cursor::MoveTo(
+                            .queue(MoveTo(
                                 (col * 5 + 2) as u16,
                                 (row * 3 + 1 + i / 3) as u16,
                             ))?
@@ -120,7 +121,20 @@ impl Chessboard {
             }
         }
         Chessboard::hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
-        stdout.queue(cursor::MoveTo(0, (9 * 3 + 1) as u16))?;
+        stdout.queue(MoveTo(0, 9 * 3 + 1))?;
+        stdout.flush()?;
+        Ok(())
+    }
+    pub fn listen(&self) -> Result<()> {
+        loop {
+            if let Event::Key(event) = read()? {
+                if matches!(event.code, KeyCode::Char('c'))
+                    && matches!(event.modifiers, KeyModifiers::CONTROL)
+                {
+                    break;
+                }
+            }
+        }
         Ok(())
     }
 }

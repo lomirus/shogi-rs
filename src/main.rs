@@ -1,11 +1,14 @@
 mod chessboard;
 mod piece;
-use crossterm::{terminal::{enable_raw_mode, disable_raw_mode},Result};
+use crossterm::{terminal, Result};
 
 fn main() -> Result<()> {
-    enable_raw_mode()?;
+    terminal::enable_raw_mode()?;
+
     let chessboard = chessboard::new();
     chessboard.print()?;
-    disable_raw_mode()?;
+    chessboard.listen()?;
+
+    terminal::disable_raw_mode()?;
     Ok(())
 }
