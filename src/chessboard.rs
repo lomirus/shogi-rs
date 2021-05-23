@@ -46,10 +46,7 @@ impl Chessboard {
                 if let Some(piece) = self.board[row][col] {
                     for (i, c) in piece.r#type.to_string().char_indices() {
                         stdout
-                            .queue(MoveTo(
-                                (col * 5 + 2) as u16,
-                                (row * 3 + 1 + i / 3) as u16,
-                            ))?
+                            .queue(MoveTo((col * 5 + 2) as u16, (row * 3 + 1 + i / 3) as u16))?
                             .queue(Print(c))?;
                     }
                 }
@@ -60,6 +57,12 @@ impl Chessboard {
     fn hightlight(&self, x: u16, y: u16) -> Result<()> {
         let mut stdout = stdout();
         stdout.queue(SetForegroundColor(Color::Red))?;
+        self.print_square(x, y)?;
+        stdout.queue(ResetColor)?;
+        Ok(())
+    }
+    fn print_square(&self, x: u16, y: u16) -> Result<()> {
+        let mut stdout = stdout();
         stdout
             .queue(MoveTo(x * 5, y * 3))?
             .queue(if x == 0 && y == 0 {
@@ -118,26 +121,58 @@ impl Chessboard {
             } else {
                 Print("┼")
             })?;
-        stdout.queue(ResetColor)?;
+        stdout.flush()?;
         Ok(())
     }
     pub fn print(&self) -> Result<()> {
         self.print_background()?;
         self.print_pieces()?;
         self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
-        
         let mut stdout = stdout();
-        stdout.queue(MoveTo(0, 9 * 3 + 1))?;
         stdout.flush()?;
         Ok(())
     }
-    pub fn listen(&self) -> Result<()> {
+    pub fn listen(mut self) -> Result<()> {
         loop {
             if let Event::Key(event) = read()? {
                 if matches!(event.code, KeyCode::Char('c'))
                     && matches!(event.modifiers, KeyModifiers::CONTROL)
-                {
+                {   
+                    let mut stdout = stdout();
+                    stdout.queue(MoveTo(0, 9 * 3 + 1))?;
                     break;
+                } else {
+                    match event.code {
+                        KeyCode::Up => {
+                            self.print_square(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                            if self.chosen.1 != 0 {
+                                self.chosen.1 -= 1;
+                            }
+                            self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                        }
+                        KeyCode::Down => {
+                            self.print_square(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                            if self.chosen.1 != 8 {
+                                self.chosen.1 += 1;
+                            }
+                            self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                        }
+                        KeyCode::Left => {
+                            self.print_square(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                            if self.chosen.0 != 0 {
+                                self.chosen.0 -= 1;
+                            }
+                            self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                        }
+                        KeyCode::Right => {
+                            self.print_square(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                            if self.chosen.0 != 8 {
+                                self.chosen.0 += 1;
+                            }
+                            self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                        }
+                        _ => (),
+                    }
                 }
             }
         }
