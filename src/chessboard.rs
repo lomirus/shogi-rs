@@ -1,12 +1,53 @@
 use crate::piece::{Piece, PieceType};
+use crossterm::{
+    cursor,
+    style::{self, Colorize},
+    terminal::{Clear, ClearType},
+    QueueableCommand, Result,
+};
+use std::io::stdout;
 
-#[derive(Copy, Clone)]
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct ChessBoard([[Option<Piece>; 9]; 9]);
 
 impl ChessBoard {
-    pub fn print(&self) {
-        println!("{:?}", self);
+    fn print_background() -> Result<()> {
+        let mut stdout = stdout();
+        stdout
+            .queue(Clear(ClearType::All))?
+            .queue(cursor::MoveTo(0, 0))?;
+        println!("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐");
+        for row in 0..8 {
+            println!(
+                "│    │    │    │    │    │    │    │    │    │\n\
+                      │    │    │    │    │    │    │    │    │    │\n\
+                      ├────┼────┼────┼────┼────┼────┼────┼────┼────┤"
+            );
+        }
+        println!(
+            "│    │    │    │    │    │    │    │    │    │\n\
+                  │    │    │    │    │    │    │    │    │    │\n\
+                  └────┴────┴────┴────┴────┴────┴────┴────┴────┘"
+        );
+        Ok(())
+    }
+    pub fn print(&self) -> Result<()> {
+        ChessBoard::print_background();
+        let mut stdout = stdout();
+        for row in 0..self.0.len() {
+            for col in 0..self.0[0].len() {
+                if let Some(piece) = self.0[row][col] {
+                    for (i, c) in piece.r#type.to_string().char_indices() {
+                        stdout
+                            .queue(cursor::MoveTo((col * 5 + 2) as u16, (row * 3 + 1 + i / 3) as u16))?
+                            .queue(style::Print(c))?;
+                    }
+                }
+            }
+        }
+        stdout
+            .queue(cursor::MoveTo(0, (9 * 3 + 1) as u16))?;
+        Ok(())
     }
 }
 
