@@ -11,8 +11,8 @@ use std::io::{stdout, Write};
 #[derive(Copy, Clone, Debug)]
 pub struct Chessboard {
     board: [[Option<Piece>; 9]; 9],
-    chosen: (usize, usize),
-    focus: (usize, usize),
+    chosen: (u16, u16),
+    focus: (u16, u16),
 }
 
 impl Chessboard {
@@ -64,14 +64,14 @@ impl Chessboard {
         }
         Ok(())
     }
-    fn hightlight(&self, x: u16, y: u16, color: Color) -> Result<()> {
+    fn hightlight(&self, pos: (u16, u16), color: Color) -> Result<()> {
         let mut stdout = stdout();
         stdout.queue(SetForegroundColor(color))?;
-        self.print_square(x, y)?;
+        self.print_square(pos)?;
         stdout.queue(ResetColor)?;
         Ok(())
     }
-    fn print_square(&self, x: u16, y: u16) -> Result<()> {
+    fn print_square(&self, (x, y): (u16, u16)) -> Result<()> {
         let mut stdout = stdout();
         stdout
             .queue(MoveTo(x * 5, y * 3))?
@@ -137,8 +137,8 @@ impl Chessboard {
     pub fn print(&self) -> Result<()> {
         self.print_background()?;
         self.print_pieces()?;
-        self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16, Color::Red)?;
-        self.hightlight(self.focus.0 as u16, self.focus.1 as u16, Color::Green)?;
+        self.hightlight(self.chosen, Color::Red)?;
+        self.hightlight(self.focus, Color::Green)?;
         let mut stdout = stdout();
         stdout.flush()?;
         Ok(())
@@ -155,68 +155,44 @@ impl Chessboard {
                 } else {
                     match event.code {
                         KeyCode::Up => {
-                            self.print_square(self.focus.0 as u16, self.focus.1 as u16)?;
+                            self.print_square(self.focus)?;
                             if self.focus.1 != 0 {
                                 self.focus.1 -= 1;
                             }
-                            self.hightlight(
-                                self.chosen.0 as u16,
-                                self.chosen.1 as u16,
-                                Color::Red,
-                            )?;
-                            self.hightlight(
-                                self.focus.0 as u16,
-                                self.focus.1 as u16,
-                                Color::Green,
-                            )?;
+                            self.hightlight(self.chosen, Color::Red)?;
+                            self.hightlight(self.focus, Color::Green)?;
                         }
                         KeyCode::Down => {
-                            self.print_square(self.focus.0 as u16, self.focus.1 as u16)?;
+                            self.print_square(self.focus)?;
                             if self.focus.1 != 8 {
                                 self.focus.1 += 1;
                             }
-                            self.hightlight(
-                                self.chosen.0 as u16,
-                                self.chosen.1 as u16,
-                                Color::Red,
-                            )?;
-                            self.hightlight(
-                                self.focus.0 as u16,
-                                self.focus.1 as u16,
-                                Color::Green,
-                            )?;
+                            self.hightlight(self.chosen, Color::Red)?;
+                            self.hightlight(self.focus, Color::Green)?;
                         }
                         KeyCode::Left => {
-                            self.print_square(self.focus.0 as u16, self.focus.1 as u16)?;
+                            self.print_square(self.focus)?;
                             if self.focus.0 != 0 {
                                 self.focus.0 -= 1;
                             }
-                            self.hightlight(
-                                self.chosen.0 as u16,
-                                self.chosen.1 as u16,
-                                Color::Red,
-                            )?;
-                            self.hightlight(
-                                self.focus.0 as u16,
-                                self.focus.1 as u16,
-                                Color::Green,
-                            )?;
+                            self.hightlight(self.chosen, Color::Red)?;
+                            self.hightlight(self.focus, Color::Green)?;
                         }
                         KeyCode::Right => {
-                            self.print_square(self.focus.0 as u16, self.focus.1 as u16)?;
+                            self.print_square(self.focus)?;
                             if self.focus.0 != 8 {
                                 self.focus.0 += 1;
                             }
-                            self.hightlight(
-                                self.chosen.0 as u16,
-                                self.chosen.1 as u16,
-                                Color::Red,
-                            )?;
-                            self.hightlight(
-                                self.focus.0 as u16,
-                                self.focus.1 as u16,
-                                Color::Green,
-                            )?;
+                            self.hightlight(self.chosen, Color::Red)?;
+                            self.hightlight(self.focus, Color::Green)?;
+                        }
+                        KeyCode::Enter => {
+                            self.print_square(self.chosen)?;
+                            self.print_square(self.focus)?;
+                            self.chosen.0 = self.focus.0;
+                            self.chosen.1 = self.focus.1;
+                            self.hightlight(self.chosen, Color::Red)?;
+                            self.hightlight(self.focus, Color::Green)?;
                         }
                         _ => (),
                     }
