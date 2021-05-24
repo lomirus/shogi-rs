@@ -12,6 +12,7 @@ use std::io::{stdout, Write};
 pub struct Chessboard {
     board: [[Option<Piece>; 9]; 9],
     chosen: (usize, usize),
+    focus: (usize, usize),
 }
 
 impl Chessboard {
@@ -63,9 +64,9 @@ impl Chessboard {
         }
         Ok(())
     }
-    fn hightlight(&self, x: u16, y: u16) -> Result<()> {
+    fn hightlight(&self, x: u16, y: u16, color: Color) -> Result<()> {
         let mut stdout = stdout();
-        stdout.queue(SetForegroundColor(Color::Red))?;
+        stdout.queue(SetForegroundColor(color))?;
         self.print_square(x, y)?;
         stdout.queue(ResetColor)?;
         Ok(())
@@ -136,7 +137,8 @@ impl Chessboard {
     pub fn print(&self) -> Result<()> {
         self.print_background()?;
         self.print_pieces()?;
-        self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+        self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16, Color::Red)?;
+        self.hightlight(self.focus.0 as u16, self.focus.1 as u16, Color::Green)?;
         let mut stdout = stdout();
         stdout.flush()?;
         Ok(())
@@ -153,32 +155,68 @@ impl Chessboard {
                 } else {
                     match event.code {
                         KeyCode::Up => {
-                            self.print_square(self.chosen.0 as u16, self.chosen.1 as u16)?;
-                            if self.chosen.1 != 0 {
-                                self.chosen.1 -= 1;
+                            self.print_square(self.focus.0 as u16, self.focus.1 as u16)?;
+                            if self.focus.1 != 0 {
+                                self.focus.1 -= 1;
                             }
-                            self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                            self.hightlight(
+                                self.chosen.0 as u16,
+                                self.chosen.1 as u16,
+                                Color::Red,
+                            )?;
+                            self.hightlight(
+                                self.focus.0 as u16,
+                                self.focus.1 as u16,
+                                Color::Green,
+                            )?;
                         }
                         KeyCode::Down => {
-                            self.print_square(self.chosen.0 as u16, self.chosen.1 as u16)?;
-                            if self.chosen.1 != 8 {
-                                self.chosen.1 += 1;
+                            self.print_square(self.focus.0 as u16, self.focus.1 as u16)?;
+                            if self.focus.1 != 8 {
+                                self.focus.1 += 1;
                             }
-                            self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                            self.hightlight(
+                                self.chosen.0 as u16,
+                                self.chosen.1 as u16,
+                                Color::Red,
+                            )?;
+                            self.hightlight(
+                                self.focus.0 as u16,
+                                self.focus.1 as u16,
+                                Color::Green,
+                            )?;
                         }
                         KeyCode::Left => {
-                            self.print_square(self.chosen.0 as u16, self.chosen.1 as u16)?;
-                            if self.chosen.0 != 0 {
-                                self.chosen.0 -= 1;
+                            self.print_square(self.focus.0 as u16, self.focus.1 as u16)?;
+                            if self.focus.0 != 0 {
+                                self.focus.0 -= 1;
                             }
-                            self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                            self.hightlight(
+                                self.chosen.0 as u16,
+                                self.chosen.1 as u16,
+                                Color::Red,
+                            )?;
+                            self.hightlight(
+                                self.focus.0 as u16,
+                                self.focus.1 as u16,
+                                Color::Green,
+                            )?;
                         }
                         KeyCode::Right => {
-                            self.print_square(self.chosen.0 as u16, self.chosen.1 as u16)?;
-                            if self.chosen.0 != 8 {
-                                self.chosen.0 += 1;
+                            self.print_square(self.focus.0 as u16, self.focus.1 as u16)?;
+                            if self.focus.0 != 8 {
+                                self.focus.0 += 1;
                             }
-                            self.hightlight(self.chosen.0 as u16, self.chosen.1 as u16)?;
+                            self.hightlight(
+                                self.chosen.0 as u16,
+                                self.chosen.1 as u16,
+                                Color::Red,
+                            )?;
+                            self.hightlight(
+                                self.focus.0 as u16,
+                                self.focus.1 as u16,
+                                Color::Green,
+                            )?;
                         }
                         _ => (),
                     }
@@ -315,5 +353,6 @@ pub fn new() -> Chessboard {
             ],
         ],
         chosen: (4, 8),
+        focus: (4, 8),
     }
 }
