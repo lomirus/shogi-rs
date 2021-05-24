@@ -44,6 +44,15 @@ impl Chessboard {
         for row in 0..self.board.len() {
             for col in 0..self.board[0].len() {
                 if let Some(piece) = self.board[row][col] {
+                    if piece.side {
+                        stdout
+                            .queue(MoveTo((col * 5 + 1) as u16, (row * 3 + 1) as u16))?
+                            .queue(Print("╱  ╲"))?;
+                    } else {
+                        stdout
+                            .queue(MoveTo((col * 5 + 1) as u16, (row * 3 + 2) as u16))?
+                            .queue(Print("╲  ╱"))?;
+                    }
                     for (i, c) in piece.r#type.to_string().char_indices() {
                         stdout
                             .queue(MoveTo((col * 5 + 2) as u16, (row * 3 + 1 + i / 3) as u16))?
@@ -137,7 +146,7 @@ impl Chessboard {
             if let Event::Key(event) = read()? {
                 if matches!(event.code, KeyCode::Char('c'))
                     && matches!(event.modifiers, KeyModifiers::CONTROL)
-                {   
+                {
                     let mut stdout = stdout();
                     stdout.queue(MoveTo(0, 9 * 3 + 1))?;
                     break;
