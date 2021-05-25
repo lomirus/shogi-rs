@@ -1,17 +1,25 @@
-#[derive(Debug)]
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum PieceType {
-    Lance,  // 香車
-    Knight, // 桂馬
-    Silver, // 銀將
-    Gold,   // 金將
-    King,   // 王將
-    Rook,   // 飛車
-    Bishop, // 角行
-    Pawn,   // 步兵
+    /// 香車
+    Lance,
+    /// 桂馬
+    Knight,
+    /// 銀將
+    Silver,
+    /// 金將
+    Gold,
+    /// 王將
+    King,
+    /// 飛車
+    Rook,
+    /// 角行
+    Bishop,
+    /// 步兵
+    Pawn,
 }
 
 impl PieceType {
+    /// Returns the kanji name of the piece.
     pub fn to_string(&self) -> String {
         match self {
             PieceType::Lance => String::from("香車"),
@@ -26,10 +34,10 @@ impl PieceType {
     }
 }
 
-#[derive(Debug)]
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Piece {
+    /// Piece type.
     pub r#type: PieceType,
+    /// Piece side.
     pub side: bool,
 }
-

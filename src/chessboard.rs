@@ -10,12 +10,16 @@ use std::io::{stdout, Write};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Chessboard {
+    /// Chessboard data.
     board: [[Option<Piece>; 9]; 9],
+    /// Coordinate of the chosen square now.
     chosen: (u16, u16),
+    /// Coordinate of the focused square now.
     focus: (u16, u16),
 }
 
 impl Chessboard {
+    /// Print the grid of the chessboard.
     fn print_background(&self) -> Result<()> {
         let mut stdout = stdout();
         stdout
@@ -40,6 +44,8 @@ impl Chessboard {
             .queue(Print("└────┴────┴────┴────┴────┴────┴────┴────┴────┘"))?;
         Ok(())
     }
+
+    /// Print the name and side of all pieces at their corresponding square.
     fn print_pieces(&self) -> Result<()> {
         let mut stdout = stdout();
         for row in 0..self.board.len() {
@@ -64,7 +70,9 @@ impl Chessboard {
         }
         Ok(())
     }
-    fn hightlight(&self, (x, y): (u16, u16), color: Color) -> Result<()> {
+
+    /// Draw one square with specific color, while using the bold symbol.
+    fn hightlight_square(&self, (x, y): (u16, u16), color: Color) -> Result<()> {
         let mut stdout = stdout();
         stdout.queue(SetForegroundColor(color))?;
         stdout
@@ -112,6 +120,8 @@ impl Chessboard {
         stdout.queue(ResetColor)?;
         Ok(())
     }
+
+    /// Draw one square as a common square.
     fn reset_square(&self, (x, y): (u16, u16)) -> Result<()> {
         let mut stdout = stdout();
         stdout
@@ -158,15 +168,19 @@ impl Chessboard {
         stdout.flush()?;
         Ok(())
     }
+
+    /// Print the chessboard.
     pub fn print(&self) -> Result<()> {
         self.print_background()?;
         self.print_pieces()?;
-        self.hightlight(self.chosen, Color::Red)?;
-        self.hightlight(self.focus, Color::Green)?;
+        self.hightlight_square(self.chosen, Color::Red)?;
+        self.hightlight_square(self.focus, Color::Green)?;
         let mut stdout = stdout();
         stdout.flush()?;
         Ok(())
     }
+
+    /// Listen the keyboard input events.
     pub fn listen(mut self) -> Result<()> {
         loop {
             if let Event::Key(event) = read()? {
@@ -191,8 +205,8 @@ impl Chessboard {
                             self.reset_square(self.focus)?;
                             self.chosen.0 = self.focus.0;
                             self.chosen.1 = self.focus.1;
-                            self.hightlight(self.chosen, Color::Red)?;
-                            self.hightlight(self.focus, Color::Green)?;
+                            self.hightlight_square(self.chosen, Color::Red)?;
+                            self.hightlight_square(self.focus, Color::Green)?;
                         }
                         _ => (),
                     }
@@ -201,44 +215,53 @@ impl Chessboard {
         }
         Ok(())
     }
+
+    /// Move up the coordinate of the focused square.
     fn move_up_focus(&mut self) -> Result<()> {
         self.reset_square(self.focus)?;
         if self.focus.1 != 0 {
             self.focus.1 -= 1;
         }
-        self.hightlight(self.chosen, Color::Red)?;
-        self.hightlight(self.focus, Color::Green)?;
+        self.hightlight_square(self.chosen, Color::Red)?;
+        self.hightlight_square(self.focus, Color::Green)?;
         Ok(())
     }
+
+    /// Move down the coordinate of the focused square.
     fn move_down_focus(&mut self) -> Result<()> {
         self.reset_square(self.focus)?;
         if self.focus.1 != 8 {
             self.focus.1 += 1;
         }
-        self.hightlight(self.chosen, Color::Red)?;
-        self.hightlight(self.focus, Color::Green)?;
+        self.hightlight_square(self.chosen, Color::Red)?;
+        self.hightlight_square(self.focus, Color::Green)?;
         Ok(())
     }
+
+    /// Move left the coordinate of the focused square.
     fn move_left_focus(&mut self) -> Result<()> {
         self.reset_square(self.focus)?;
         if self.focus.0 != 0 {
             self.focus.0 -= 1;
         }
-        self.hightlight(self.chosen, Color::Red)?;
-        self.hightlight(self.focus, Color::Green)?;
+        self.hightlight_square(self.chosen, Color::Red)?;
+        self.hightlight_square(self.focus, Color::Green)?;
         Ok(())
     }
+
+    /// Move right the coordinate of the focused square.
     fn move_right_focus(&mut self) -> Result<()> {
         self.reset_square(self.focus)?;
         if self.focus.0 != 8 {
             self.focus.0 += 1;
         }
-        self.hightlight(self.chosen, Color::Red)?;
-        self.hightlight(self.focus, Color::Green)?;
+        self.hightlight_square(self.chosen, Color::Red)?;
+        self.hightlight_square(self.focus, Color::Green)?;
         Ok(())
     }
 }
 
+/// Returns the default chessboard.
 pub fn new() -> Chessboard {
     Chessboard {
         board: [
@@ -369,18 +392,29 @@ pub fn new() -> Chessboard {
     }
 }
 
+/// The position of a square in the chessboard.
 enum PosType {
+    /// Top left corner.
     TopLeft,
+    /// Top right corner.
     TopRight,
+    /// Bottom left corner.
     BottomLeft,
+    /// Bottom right corner.
     BottomRight,
+    /// Top edge.
     Top,
+    /// Bottom edge.
     Bottom,
+    /// Left edge.
     Left,
+    /// Right edge.
     Right,
+    /// Other positons (in the chessboard).
     Other,
 }
 
+/// Returns the `PosType` of the square of given coordinate. 
 fn get_pos_type(x: u16, y: u16) -> PosType {
     if x == 0 && y == 0 {
         PosType::TopLeft
