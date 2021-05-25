@@ -64,14 +64,72 @@ impl Chessboard {
         }
         Ok(())
     }
-    fn hightlight(&self, pos: (u16, u16), color: Color) -> Result<()> {
+    fn hightlight(&self, (x, y): (u16, u16), color: Color) -> Result<()> {
         let mut stdout = stdout();
         stdout.queue(SetForegroundColor(color))?;
-        self.print_square(pos)?;
+        stdout
+            .queue(MoveTo(x * 5, y * 3))?
+            .queue(if x == 0 && y == 0 {
+                Print("┏")
+            } else if x == 0 {
+                Print("┣")
+            } else if y == 0 {
+                Print("┳")
+            } else {
+                Print("╋")
+            })?
+            .queue(Print("━"))?
+            .queue(Print("━"))?
+            .queue(Print("━"))?
+            .queue(Print("━"))?
+            .queue(if x == 8 && y == 0 {
+                Print("┓")
+            } else if x == 8 {
+                Print("┫")
+            } else if y == 0 {
+                Print("┳")
+            } else {
+                Print("╋")
+            })?;
+        stdout
+            .queue(MoveTo(x * 5, y * 3 + 1))?
+            .queue(Print("┃"))?
+            .queue(MoveTo(x * 5 + 5, y * 3 + 1))?
+            .queue(Print("┃"))?;
+        stdout
+            .queue(MoveTo(x * 5, y * 3 + 2))?
+            .queue(Print("┃"))?
+            .queue(MoveTo(x * 5 + 5, y * 3 + 2))?
+            .queue(Print("┃"))?;
+        stdout
+            .queue(MoveTo(x * 5, y * 3 + 3))?
+            .queue(if x == 0 && y == 8 {
+                Print("┗")
+            } else if x == 0 {
+                Print("┣")
+            } else if y == 8 {
+                Print("┻")
+            } else {
+                Print("╋")
+            })?
+            .queue(Print("━"))?
+            .queue(Print("━"))?
+            .queue(Print("━"))?
+            .queue(Print("━"))?
+            .queue(if x == 8 && y == 8 {
+                Print("┛")
+            } else if x == 8 {
+                Print("┫")
+            } else if y == 8 {
+                Print("┻")
+            } else {
+                Print("╋")
+            })?;
+        stdout.flush()?;
         stdout.queue(ResetColor)?;
         Ok(())
     }
-    fn print_square(&self, (x, y): (u16, u16)) -> Result<()> {
+    fn reset_square(&self, (x, y): (u16, u16)) -> Result<()> {
         let mut stdout = stdout();
         stdout
             .queue(MoveTo(x * 5, y * 3))?
@@ -155,7 +213,7 @@ impl Chessboard {
                 } else {
                     match event.code {
                         KeyCode::Up => {
-                            self.print_square(self.focus)?;
+                            self.reset_square(self.focus)?;
                             if self.focus.1 != 0 {
                                 self.focus.1 -= 1;
                             }
@@ -163,7 +221,7 @@ impl Chessboard {
                             self.hightlight(self.focus, Color::Green)?;
                         }
                         KeyCode::Down => {
-                            self.print_square(self.focus)?;
+                            self.reset_square(self.focus)?;
                             if self.focus.1 != 8 {
                                 self.focus.1 += 1;
                             }
@@ -171,7 +229,7 @@ impl Chessboard {
                             self.hightlight(self.focus, Color::Green)?;
                         }
                         KeyCode::Left => {
-                            self.print_square(self.focus)?;
+                            self.reset_square(self.focus)?;
                             if self.focus.0 != 0 {
                                 self.focus.0 -= 1;
                             }
@@ -179,7 +237,7 @@ impl Chessboard {
                             self.hightlight(self.focus, Color::Green)?;
                         }
                         KeyCode::Right => {
-                            self.print_square(self.focus)?;
+                            self.reset_square(self.focus)?;
                             if self.focus.0 != 8 {
                                 self.focus.0 += 1;
                             }
@@ -187,8 +245,8 @@ impl Chessboard {
                             self.hightlight(self.focus, Color::Green)?;
                         }
                         KeyCode::Enter => {
-                            self.print_square(self.chosen)?;
-                            self.print_square(self.focus)?;
+                            self.reset_square(self.chosen)?;
+                            self.reset_square(self.focus)?;
                             self.chosen.0 = self.focus.0;
                             self.chosen.1 = self.focus.1;
                             self.hightlight(self.chosen, Color::Red)?;
