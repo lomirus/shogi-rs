@@ -78,18 +78,24 @@ impl Chessboard {
         stdout
             // Row 1
             .queue(MoveTo(x * 5, y * 3))?
-            .queue(Print(match get_pos_type(x, y) {
-                PosType::TopLeft => "┏",
-                PosType::Left => "┣",
-                PosType::Top => "┳",
-                _ => "╋",
+            .queue(Print(if x == 0 && y == 0 {
+                "┏"
+            } else if x == 0 {
+                "┣"
+            } else if y == 0 {
+                "┳"
+            } else {
+                "╋"
             }))?
             .queue(Print("━━━━"))?
-            .queue(Print(match get_pos_type(x, y) {
-                PosType::TopRight => "┓",
-                PosType::Right => "┫",
-                PosType::Top => "┳",
-                _ => "╋",
+            .queue(Print(if x == 8 && y == 0 {
+                "┓"
+            } else if x == 8 {
+                "┫"
+            } else if y == 0 {
+                "┳"
+            } else {
+                "╋"
             }))?
             // Row 2
             .queue(MoveTo(x * 5, y * 3 + 1))?
@@ -103,18 +109,24 @@ impl Chessboard {
             .queue(Print("┃"))?
             // Row 4
             .queue(MoveTo(x * 5, y * 3 + 3))?
-            .queue(Print(match get_pos_type(x, y) {
-                PosType::BottomLeft => "┗",
-                PosType::Left => "┣",
-                PosType::Bottom => "┻",
-                _ => "╋",
+            .queue(Print(if x == 0 && y == 8 {
+                "┗"
+            } else if x == 0 {
+                "┣"
+            } else if y == 8 {
+                "┻"
+            } else {
+                "╋"
             }))?
             .queue(Print("━━━━"))?
-            .queue(Print(match get_pos_type(x, y) {
-                PosType::BottomRight => "┛",
-                PosType::Right => "┫",
-                PosType::Bottom => "┻",
-                _ => "╋",
+            .queue(Print(if x == 8 && y == 8 {
+                "┛"
+            } else if x == 8 {
+                "┫"
+            } else if y == 8 {
+                "┻"
+            } else {
+                "╋"
             }))?;
         stdout.flush()?;
         stdout.queue(ResetColor)?;
@@ -127,18 +139,24 @@ impl Chessboard {
         stdout
             // Row 1
             .queue(MoveTo(x * 5, y * 3))?
-            .queue(Print(match get_pos_type(x, y) {
-                PosType::TopLeft => "┌",
-                PosType::Left => "├",
-                PosType::Top => "┬",
-                _ => "┼",
+            .queue(Print(if x == 0 && y == 0 {
+                "┌"
+            } else if x == 0 {
+                "├"
+            } else if y == 0 {
+                "┬"
+            } else {
+                "┼"
             }))?
             .queue(Print("────"))?
-            .queue(Print(match get_pos_type(x, y) {
-                PosType::TopRight => "┐",
-                PosType::Right => "┤",
-                PosType::Top => "┬",
-                _ => "┼",
+            .queue(Print(if x == 8 && y == 0 {
+                "┐"
+            } else if x == 8 {
+                "┤"
+            } else if y == 0 {
+                "┬"
+            } else {
+                "┼"
             }))?
             // Row 2
             .queue(MoveTo(x * 5, y * 3 + 1))?
@@ -152,18 +170,24 @@ impl Chessboard {
             .queue(Print("│"))?
             // Row 4
             .queue(MoveTo(x * 5, y * 3 + 3))?
-            .queue(Print(match get_pos_type(x, y) {
-                PosType::BottomLeft => "└",
-                PosType::Left => "├",
-                PosType::Bottom => "┴",
-                _ => "┼",
+            .queue(Print(if x == 0 && y == 8 {
+                "└"
+            } else if x == 0 {
+                "├"
+            } else if y == 8 {
+                "┴"
+            } else {
+                "┼"
             }))?
             .queue(Print("────"))?
-            .queue(Print(match get_pos_type(x, y) {
-                PosType::BottomRight => "┘",
-                PosType::Right => "┤",
-                PosType::Bottom => "┴",
-                _ => "┼",
+            .queue(Print(if x == 8 && y == 8 {
+                "┘"
+            } else if x == 8 {
+                "┤"
+            } else if y == 8 {
+                "┴"
+            } else {
+                "┼"
             }))?;
         stdout.flush()?;
         Ok(())
@@ -389,50 +413,5 @@ pub fn new() -> Chessboard {
         ],
         chosen: (4, 8),
         focus: (4, 8),
-    }
-}
-
-/// The position of a square in the chessboard.
-enum PosType {
-    /// Top left corner.
-    TopLeft,
-    /// Top right corner.
-    TopRight,
-    /// Bottom left corner.
-    BottomLeft,
-    /// Bottom right corner.
-    BottomRight,
-    /// Top edge.
-    Top,
-    /// Bottom edge.
-    Bottom,
-    /// Left edge.
-    Left,
-    /// Right edge.
-    Right,
-    /// Other positons (in the chessboard).
-    Other,
-}
-
-/// Returns the `PosType` of the square of given coordinate. 
-fn get_pos_type(x: u16, y: u16) -> PosType {
-    if x == 0 && y == 0 {
-        PosType::TopLeft
-    } else if x == 0 && y == 8 {
-        PosType::BottomLeft
-    } else if x == 8 && y == 0 {
-        PosType::TopRight
-    } else if x == 8 && y == 8 {
-        PosType::BottomRight
-    } else if x == 0 {
-        PosType::Left
-    } else if x == 8 {
-        PosType::Right
-    } else if y == 0 {
-        PosType::Top
-    } else if y == 8 {
-        PosType::Bottom
-    } else {
-        PosType::Other
     }
 }
