@@ -178,38 +178,14 @@ impl Chessboard {
                     break;
                 } else {
                     match event.code {
-                        KeyCode::Up => {
-                            self.reset_square(self.focus)?;
-                            if self.focus.1 != 0 {
-                                self.focus.1 -= 1;
-                            }
-                            self.hightlight(self.chosen, Color::Red)?;
-                            self.hightlight(self.focus, Color::Green)?;
-                        }
-                        KeyCode::Down => {
-                            self.reset_square(self.focus)?;
-                            if self.focus.1 != 8 {
-                                self.focus.1 += 1;
-                            }
-                            self.hightlight(self.chosen, Color::Red)?;
-                            self.hightlight(self.focus, Color::Green)?;
-                        }
-                        KeyCode::Left => {
-                            self.reset_square(self.focus)?;
-                            if self.focus.0 != 0 {
-                                self.focus.0 -= 1;
-                            }
-                            self.hightlight(self.chosen, Color::Red)?;
-                            self.hightlight(self.focus, Color::Green)?;
-                        }
-                        KeyCode::Right => {
-                            self.reset_square(self.focus)?;
-                            if self.focus.0 != 8 {
-                                self.focus.0 += 1;
-                            }
-                            self.hightlight(self.chosen, Color::Red)?;
-                            self.hightlight(self.focus, Color::Green)?;
-                        }
+                        KeyCode::Up => self.move_up_focus()?,
+                        KeyCode::Down => self.move_down_focus()?,
+                        KeyCode::Left => self.move_left_focus()?,
+                        KeyCode::Right => self.move_right_focus()?,
+                        KeyCode::Char('w') => self.move_up_focus()?,
+                        KeyCode::Char('s') => self.move_down_focus()?,
+                        KeyCode::Char('a') => self.move_left_focus()?,
+                        KeyCode::Char('d') => self.move_right_focus()?,
                         KeyCode::Enter => {
                             self.reset_square(self.chosen)?;
                             self.reset_square(self.focus)?;
@@ -223,6 +199,42 @@ impl Chessboard {
                 }
             }
         }
+        Ok(())
+    }
+    fn move_up_focus(&mut self) -> Result<()> {
+        self.reset_square(self.focus)?;
+        if self.focus.1 != 0 {
+            self.focus.1 -= 1;
+        }
+        self.hightlight(self.chosen, Color::Red)?;
+        self.hightlight(self.focus, Color::Green)?;
+        Ok(())
+    }
+    fn move_down_focus(&mut self) -> Result<()> {
+        self.reset_square(self.focus)?;
+        if self.focus.1 != 8 {
+            self.focus.1 += 1;
+        }
+        self.hightlight(self.chosen, Color::Red)?;
+        self.hightlight(self.focus, Color::Green)?;
+        Ok(())
+    }
+    fn move_left_focus(&mut self) -> Result<()> {
+        self.reset_square(self.focus)?;
+        if self.focus.0 != 0 {
+            self.focus.0 -= 1;
+        }
+        self.hightlight(self.chosen, Color::Red)?;
+        self.hightlight(self.focus, Color::Green)?;
+        Ok(())
+    }
+    fn move_right_focus(&mut self) -> Result<()> {
+        self.reset_square(self.focus)?;
+        if self.focus.0 != 8 {
+            self.focus.0 += 1;
+        }
+        self.hightlight(self.chosen, Color::Red)?;
+        self.hightlight(self.focus, Color::Green)?;
         Ok(())
     }
 }
