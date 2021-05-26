@@ -21,6 +21,8 @@ fn before_main() -> Result<()> {
 }
 
 fn after_main() -> Result<()> {
+    let mut stdout = stdout();
+    stdout.execute(cursor::Show)?;
     terminal::disable_raw_mode()?;
     Ok(())
 }
