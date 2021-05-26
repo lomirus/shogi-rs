@@ -238,7 +238,7 @@ impl Chessboard {
 
                             self.chosen.0 = self.focus.0;
                             self.chosen.1 = self.focus.1;
-                            self.reachable = self.get_reachable_squares(self.chosen);
+                            self.update_reachable_squares(self.chosen);
 
                             self.draw_hightlight_squares()?;
                         }
@@ -286,217 +286,216 @@ impl Chessboard {
         self.draw_hightlight_squares()
     }
 
-    fn get_reachable_squares(&self, (x, y): (usize, usize)) -> Vec<(usize, usize)> {
+    fn update_reachable_squares(&mut self, (x, y): (usize, usize)) {
+        self.reachable.clear();
         let piece = self.board[y as usize][x as usize];
-        let mut reachable_squares: Vec<(usize, usize)> = vec![];
         if let None::<Piece> = piece {
-            return reachable_squares;
+            return;
         }
         let piece = piece.unwrap();
         match piece.r#type {
             PieceType::Pawn => {
                 if piece.side {
                     if y > 0 {
-                        reachable_squares.push((x, y - 1))
+                        self.reachable.push((x, y - 1))
                     }
                 } else {
                     if y < 8 {
-                        reachable_squares.push((x, y + 1))
+                        self.reachable.push((x, y + 1))
                     }
                 }
             }
             PieceType::Rook => {
                 for x_i in (0..x).chain(x + 1..9) {
-                    reachable_squares.push((x_i, y))
+                    self.reachable.push((x_i, y))
                 }
                 for y_i in (0..y).chain(y + 1..9) {
-                    reachable_squares.push((x, y_i))
+                    self.reachable.push((x, y_i))
                 }
             }
             PieceType::Bishop => {
                 let mut i = 1;
                 while x + i <= 8 && y + i <= 8 {
-                    reachable_squares.push((x + i, y + i));
+                    self.reachable.push((x + i, y + i));
                     i += 1;
                 }
 
                 let mut i = 1;
                 while x + i <= 8 && y >= i {
-                    reachable_squares.push((x + i, y - i));
+                    self.reachable.push((x + i, y - i));
                     i += 1;
                 }
 
                 let mut i = 1;
                 while x >= i && y + i <= 8 {
-                    reachable_squares.push((x - i, y + i));
+                    self.reachable.push((x - i, y + i));
                     i += 1;
                 }
 
                 let mut i = 1;
                 while x >= i && y >= i {
-                    reachable_squares.push((x - i, y - i));
+                    self.reachable.push((x - i, y - i));
                     i += 1;
                 }
             }
             PieceType::Lance => {
                 if piece.side {
                     for y_i in (0..y).rev() {
-                        reachable_squares.push((x, y_i))
+                        self.reachable.push((x, y_i))
                     }
                 } else {
                     for y_i in (y + 1)..9 {
-                        reachable_squares.push((x, y_i))
+                        self.reachable.push((x, y_i))
                     }
                 }
             }
             PieceType::Knight => {
                 if piece.side {
                     if x >= 1 && y >= 2 {
-                        reachable_squares.push((x - 1, y - 2));
+                        self.reachable.push((x - 1, y - 2));
                     }
                     if x + 1 <= 8 && y >= 2 {
-                        reachable_squares.push((x + 1, y - 2));
+                        self.reachable.push((x + 1, y - 2));
                     }
                 } else {
                     if x >= 1 && y + 2 <= 8 {
-                        reachable_squares.push((x - 1, y + 2));
+                        self.reachable.push((x - 1, y + 2));
                     }
                     if x + 1 <= 8 && y + 2 <= 8 {
-                        reachable_squares.push((x + 1, y + 2));
+                        self.reachable.push((x + 1, y + 2));
                     }
                 }
             }
             PieceType::Silver => {
                 if piece.side {
                     if x >= 1 && y >= 1 {
-                        reachable_squares.push((x - 1, y - 1));
+                        self.reachable.push((x - 1, y - 1));
                     }
                     if y >= 1 {
-                        reachable_squares.push((x, y - 1));
+                        self.reachable.push((x, y - 1));
                     }
                     if x + 1 <= 8 && y >= 1 {
-                        reachable_squares.push((x + 1, y - 1));
+                        self.reachable.push((x + 1, y - 1));
                     }
                     if x >= 1 && y + 1 <= 8 {
-                        reachable_squares.push((x - 1, y + 1));
+                        self.reachable.push((x - 1, y + 1));
                     }
                     if x + 1 <= 8 && y + 1 <= 8 {
-                        reachable_squares.push((x + 1, y + 1));
+                        self.reachable.push((x + 1, y + 1));
                     }
                 } else {
                     if x >= 1 && y + 1 <= 8 {
-                        reachable_squares.push((x - 1, y + 1));
+                        self.reachable.push((x - 1, y + 1));
                     }
                     if y + 1 <= 8 {
-                        reachable_squares.push((x, y + 1));
+                        self.reachable.push((x, y + 1));
                     }
                     if x + 1 <= 8 && y + 1 <= 8 {
-                        reachable_squares.push((x + 1, y + 1));
+                        self.reachable.push((x + 1, y + 1));
                     }
                     if x >= 1 && y >= 1 {
-                        reachable_squares.push((x - 1, y + 1));
+                        self.reachable.push((x - 1, y + 1));
                     }
                     if x + 1 <= 8 && y >= 1 {
-                        reachable_squares.push((x + 1, y + 1));
+                        self.reachable.push((x + 1, y + 1));
                     }
                 }
             }
             PieceType::Gold => {
                 if piece.side {
                     if x >= 1 && y >= 1 {
-                        reachable_squares.push((x - 1, y - 1));
+                        self.reachable.push((x - 1, y - 1));
                     }
                     if y >= 1 {
-                        reachable_squares.push((x, y - 1));
+                        self.reachable.push((x, y - 1));
                     }
                     if x + 1 <= 8 && y >= 1 {
-                        reachable_squares.push((x + 1, y - 1));
+                        self.reachable.push((x + 1, y - 1));
                     }
                     if x >= 1 {
-                        reachable_squares.push((x - 1, y));
+                        self.reachable.push((x - 1, y));
                     }
                     if x + 1 <= 8 {
-                        reachable_squares.push((x + 1, y));
+                        self.reachable.push((x + 1, y));
                     }
                     if y + 1 <= 8 {
-                        reachable_squares.push((x, y + 1));
+                        self.reachable.push((x, y + 1));
                     }
                 } else {
                     if x >= 1 && y + 1 <= 8 {
-                        reachable_squares.push((x - 1, y + 1));
+                        self.reachable.push((x - 1, y + 1));
                     }
                     if y + 1 <= 8 {
-                        reachable_squares.push((x, y + 1));
+                        self.reachable.push((x, y + 1));
                     }
                     if x + 1 <= 8 && y + 1 <= 8 {
-                        reachable_squares.push((x + 1, y + 1));
+                        self.reachable.push((x + 1, y + 1));
                     }
                     if x >= 1 {
-                        reachable_squares.push((x - 1, y));
+                        self.reachable.push((x - 1, y));
                     }
                     if x + 1 <= 8 {
-                        reachable_squares.push((x + 1, y));
+                        self.reachable.push((x + 1, y));
                     }
                     if y >= 1 {
-                        reachable_squares.push((x, y - 1));
+                        self.reachable.push((x, y - 1));
                     }
                 }
             }
             PieceType::King => {
                 if piece.side {
                     if x >= 1 && y >= 1 {
-                        reachable_squares.push((x - 1, y - 1));
+                        self.reachable.push((x - 1, y - 1));
                     }
                     if y >= 1 {
-                        reachable_squares.push((x, y - 1));
+                        self.reachable.push((x, y - 1));
                     }
                     if x + 1 <= 8 && y >= 1 {
-                        reachable_squares.push((x + 1, y - 1));
+                        self.reachable.push((x + 1, y - 1));
                     }
                     if x >= 1 {
-                        reachable_squares.push((x - 1, y));
+                        self.reachable.push((x - 1, y));
                     }
                     if x + 1 <= 8 {
-                        reachable_squares.push((x + 1, y));
+                        self.reachable.push((x + 1, y));
                     }
                     if y + 1 <= 8 {
-                        reachable_squares.push((x, y + 1));
+                        self.reachable.push((x, y + 1));
                     }
                     if x >= 1 && y + 1 <= 8 {
-                        reachable_squares.push((x - 1, y + 1));
+                        self.reachable.push((x - 1, y + 1));
                     }
                     if x + 1 <= 8 && y + 1 <= 8 {
-                        reachable_squares.push((x + 1, y + 1));
+                        self.reachable.push((x + 1, y + 1));
                     }
                 } else {
                     if x >= 1 && y + 1 <= 8 {
-                        reachable_squares.push((x - 1, y + 1));
+                        self.reachable.push((x - 1, y + 1));
                     }
                     if y + 1 <= 8 {
-                        reachable_squares.push((x, y + 1));
+                        self.reachable.push((x, y + 1));
                     }
                     if x + 1 <= 8 && y + 1 <= 8 {
-                        reachable_squares.push((x + 1, y + 1));
+                        self.reachable.push((x + 1, y + 1));
                     }
                     if x >= 1 {
-                        reachable_squares.push((x - 1, y));
+                        self.reachable.push((x - 1, y));
                     }
                     if x + 1 <= 8 {
-                        reachable_squares.push((x + 1, y));
+                        self.reachable.push((x + 1, y));
                     }
                     if y >= 1 {
-                        reachable_squares.push((x, y - 1));
+                        self.reachable.push((x, y - 1));
                     }
                     if x >= 1 && y >= 1 {
-                        reachable_squares.push((x - 1, y + 1));
+                        self.reachable.push((x - 1, y + 1));
                     }
                     if x + 1 <= 8 && y >= 1 {
-                        reachable_squares.push((x + 1, y + 1));
+                        self.reachable.push((x + 1, y + 1));
                     }
                 }
             }
         }
-        reachable_squares
     }
 
     fn draw_hightlight_squares(&self) -> Result<()> {
