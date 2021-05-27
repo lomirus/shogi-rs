@@ -7,6 +7,7 @@ use crossterm::{
     QueueableCommand, Result,
 };
 use std::io::{stdout, Write};
+use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
 pub struct Chessboard {
@@ -17,6 +18,7 @@ pub struct Chessboard {
     /// Coordinate of the focused square now.
     focus: (usize, usize),
     reachable: Vec<(usize, usize)>,
+    captured: [HashSet<(usize, usize)>; 2]
 }
 
 impl Chessboard {
@@ -48,25 +50,9 @@ impl Chessboard {
 
     /// Print the name and side of all pieces at their corresponding square.
     fn print_pieces(&self) -> Result<()> {
-        let mut stdout = stdout();
         for row in 0..self.board.len() {
             for col in 0..self.board[0].len() {
-                if let Some(piece) = self.board[row][col] {
-                    if piece.side {
-                        stdout
-                            .queue(MoveTo((col * 5 + 1) as u16, (row * 3 + 1) as u16))?
-                            .queue(Print("╱  ╲"))?;
-                    } else {
-                        stdout
-                            .queue(MoveTo((col * 5 + 1) as u16, (row * 3 + 2) as u16))?
-                            .queue(Print("╲  ╱"))?;
-                    }
-                    for (i, c) in piece.r#type.to_string().char_indices() {
-                        stdout
-                            .queue(MoveTo((col * 5 + 2) as u16, (row * 3 + 1 + i / 3) as u16))?
-                            .queue(Print(c))?;
-                    }
-                }
+                self.print_piece((col, row))?;
             }
         }
         Ok(())
@@ -198,6 +184,39 @@ impl Chessboard {
         Ok(())
     }
 
+    fn print_piece(&self, (x, y): (usize, usize)) -> Result<()> {
+        let mut stdout = stdout();
+        if let Some(piece) = self.get_piece((x, y)) {
+            if piece.side {
+                stdout
+                    .queue(MoveTo((x * 5 + 1) as u16, (y * 3 + 1) as u16))?
+                    .queue(Print("╱  ╲"))?;
+            } else {
+                stdout
+                    .queue(MoveTo((x * 5 + 1) as u16, (y * 3 + 2) as u16))?
+                    .queue(Print("╲  ╱"))?;
+            }
+            for (i, c) in piece.r#type.to_string().char_indices() {
+                stdout
+                    .queue(MoveTo((x * 5 + 2) as u16, (y * 3 + 1 + i / 3) as u16))?
+                    .queue(Print(c))?;
+            }
+        }
+        Ok(())
+    }
+
+    fn clear_piece(&self, (x, y): (usize, usize)) -> Result<()> {
+        let mut stdout = stdout();
+        stdout
+            .queue(MoveTo((x * 5 + 1) as u16, (y * 3 + 1) as u16))?
+            .queue(Print("    "))?;
+        stdout
+            .queue(MoveTo((x * 5 + 1) as u16, (y * 3 + 2) as u16))?
+            .queue(Print("    "))?;
+        stdout.flush()?;
+        Ok(())
+    }
+
     /// Print the chessboard.
     pub fn print(&self) -> Result<()> {
         self.print_background()?;
@@ -236,10 +255,20 @@ impl Chessboard {
                                 self.reset_square(*square)?;
                             }
 
-                            self.chosen.0 = self.focus.0;
-                            self.chosen.1 = self.focus.1;
-                            self.update_reachable_squares(self.chosen);
+                            if self.reachable.contains(&self.focus) {
+                                self.clear_piece(self.chosen)?;
+                                if let Some(piece) = self.get_piece(self.focus) {
+                                    self.captured[!piece.side as usize].insert(self.focus);
+                                }
+                                self.set_piece(self.focus, self.get_piece(self.chosen));
+                                self.set_piece(self.chosen, None);
+                                self.chosen = self.focus;
+                                self.print_piece(self.chosen)?;
+                            } else {
+                                self.chosen = self.focus;
+                            }
 
+                            self.update_reachable_squares(self.chosen);
                             self.draw_hightlight_squares()?;
                         }
                         _ => (),
@@ -288,7 +317,7 @@ impl Chessboard {
 
     fn update_reachable_squares(&mut self, (x, y): (usize, usize)) {
         self.reachable.clear();
-        let piece = self.board[y as usize][x as usize];
+        let piece = self.get_piece((x, y));
         if let None::<Piece> = piece {
             return;
         }
@@ -387,7 +416,7 @@ impl Chessboard {
         }
         let check_x = (x as isize + offset_x) as usize;
         let check_y = (y as isize + offset_y) as usize;
-        match self.board[check_y][check_x] {
+        match self.get_piece((check_x, check_y)) {
             Option::Some(piece) => {
                 if piece.side != side {
                     self.reachable.push((check_x, check_y))
@@ -408,6 +437,14 @@ impl Chessboard {
         }
         self.hightlight_square(self.focus, Color::Green)?;
         Ok(())
+    }
+
+    fn set_piece(&mut self, (x, y): (usize, usize), new_piece: Option<Piece>) {
+        self.board[y][x] = new_piece;
+    }
+
+    fn get_piece(&self, (x, y): (usize, usize)) -> Option<Piece> {
+        self.board[y][x]
     }
 }
 
@@ -540,5 +577,6 @@ pub fn new() -> Chessboard {
         chosen: (4, 8),
         focus: (4, 8),
         reachable: Vec::new(),
+        captured: [HashSet::new(), HashSet::new()]
     }
 }
