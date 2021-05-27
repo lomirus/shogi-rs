@@ -293,247 +293,109 @@ impl Chessboard {
             return;
         }
         let piece = piece.unwrap();
+        let direction = if piece.side { -1 } else { 1 };
         match piece.r#type {
             PieceType::Pawn => {
-                if piece.side {
-                    if y > 0 {
-                        self.push_reachable(true, (x, y - 1));
-                    }
-                } else {
-                    if y < 8 {
-                        self.push_reachable(false, (x, y + 1));
-                    }
-                }
+                self.try_push_reachable(piece.side, (x, y), (0, direction));
             }
             PieceType::Rook => {
-                for x_i in (0..x).rev() {
-                    if !self.push_reachable(piece.side, (x_i, y)) {
-                        break;
-                    }
+                let mut i = 1;
+                while self.try_push_reachable(piece.side, (x, y), (i, 0)) {
+                    i += 1;
                 }
-                for x_i in (x + 1)..9 {
-                    if !self.push_reachable(piece.side, (x_i, y)) {
-                        break;
-                    }
+                let mut i = 1;
+                while self.try_push_reachable(piece.side, (x, y), (-i, 0)) {
+                    i += 1;
                 }
-                for y_i in (0..y).rev() {
-                    if !self.push_reachable(piece.side, (x, y_i)) {
-                        break;
-                    }
+                let mut i = 1;
+                while self.try_push_reachable(piece.side, (x, y), (0, i)) {
+                    i += 1;
                 }
-                for y_i in (y + 1)..9 {
-                    if !self.push_reachable(piece.side, (x, y_i)) {
-                        break;
-                    }
+                let mut i = 1;
+                while self.try_push_reachable(piece.side, (x, y), (0, -i)) {
+                    i += 1;
                 }
             }
             PieceType::Bishop => {
                 let mut i = 1;
-                while x + i <= 8 && y + i <= 8 {
-                    if !self.push_reachable(piece.side, (x + i, y + i)) {
-                        break;
-                    }
+                while self.try_push_reachable(piece.side, (x, y), (i, i)) {
                     i += 1;
                 }
-
                 let mut i = 1;
-                while x + i <= 8 && y >= i {
-                    if !self.push_reachable(piece.side, (x + i, y - i)) {
-                        break;
-                    }
+                while self.try_push_reachable(piece.side, (x, y), (i, -i)) {
                     i += 1;
                 }
-
                 let mut i = 1;
-                while x >= i && y + i <= 8 {
-                    if !self.push_reachable(piece.side, (x - i, y + i)) {
-                        break;
-                    }
+                while self.try_push_reachable(piece.side, (x, y), (-i, i)) {
                     i += 1;
                 }
-
                 let mut i = 1;
-                while x >= i && y >= i {
-                    if !self.push_reachable(piece.side, (x - i, y - i)) {
-                        break;
-                    }
+                while self.try_push_reachable(piece.side, (x, y), (-i, -i)) {
                     i += 1;
                 }
             }
             PieceType::Lance => {
-                if piece.side {
-                    for y_i in (0..y).rev() {
-                        if !self.push_reachable(piece.side, (x, y_i)) {
-                            break;
-                        }
-                    }
-                } else {
-                    for y_i in (y + 1)..9 {
-                        if !self.push_reachable(piece.side, (x, y_i)) {
-                            break;
-                        }
-                    }
+                let mut i = 1;
+                while self.try_push_reachable(piece.side, (x, y), (0, direction * i)) {
+                    i += 1;
                 }
             }
             PieceType::Knight => {
-                if piece.side {
-                    if x >= 1 && y >= 2 {
-                        self.push_reachable(piece.side, (x - 1, y - 2));
-                    }
-                    if x + 1 <= 8 && y >= 2 {
-                        self.push_reachable(piece.side, (x + 1, y - 2));
-                    }
-                } else {
-                    if x >= 1 && y + 2 <= 8 {
-                        self.push_reachable(piece.side, (x - 1, y + 2));
-                    }
-                    if x + 1 <= 8 && y + 2 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y + 2));
-                    }
-                }
+                self.try_push_reachable(piece.side, (x, y), (-1, direction * 2));
+                self.try_push_reachable(piece.side, (x, y), (1, direction * 2));
             }
             PieceType::Silver => {
-                if piece.side {
-                    if x >= 1 && y >= 1 {
-                        self.push_reachable(piece.side, (x - 1, y - 1));
-                    }
-                    if y >= 1 {
-                        self.push_reachable(piece.side, (x, y - 1));
-                    }
-                    if x + 1 <= 8 && y >= 1 {
-                        self.push_reachable(piece.side, (x + 1, y - 1));
-                    }
-                    if x >= 1 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x - 1, y + 1));
-                    }
-                    if x + 1 <= 8 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y + 1));
-                    }
-                } else {
-                    if x >= 1 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x - 1, y + 1));
-                    }
-                    if y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x, y + 1));
-                    }
-                    if x + 1 <= 8 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y + 1));
-                    }
-                    if x >= 1 && y >= 1 {
-                        self.push_reachable(piece.side, (x - 1, y + 1));
-                    }
-                    if x + 1 <= 8 && y >= 1 {
-                        self.push_reachable(piece.side, (x + 1, y + 1));
-                    }
-                }
+                self.try_push_reachable(piece.side, (x, y), (-1, direction));
+                self.try_push_reachable(piece.side, (x, y), (0, direction));
+                self.try_push_reachable(piece.side, (x, y), (1, direction));
+                self.try_push_reachable(piece.side, (x, y), (-1, 1));
+                self.try_push_reachable(piece.side, (x, y), (1, 1));
             }
             PieceType::Gold => {
-                if piece.side {
-                    if x >= 1 && y >= 1 {
-                        self.push_reachable(piece.side, (x - 1, y - 1));
-                    }
-                    if y >= 1 {
-                        self.push_reachable(piece.side, (x, y - 1));
-                    }
-                    if x + 1 <= 8 && y >= 1 {
-                        self.push_reachable(piece.side, (x + 1, y - 1));
-                    }
-                    if x >= 1 {
-                        self.push_reachable(piece.side, (x - 1, y));
-                    }
-                    if x + 1 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y));
-                    }
-                    if y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x, y + 1));
-                    }
-                } else {
-                    if x >= 1 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x - 1, y + 1));
-                    }
-                    if y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x, y + 1));
-                    }
-                    if x + 1 <= 8 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y + 1));
-                    }
-                    if x >= 1 {
-                        self.push_reachable(piece.side, (x - 1, y));
-                    }
-                    if x + 1 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y));
-                    }
-                    if y >= 1 {
-                        self.push_reachable(piece.side, (x, y - 1));
-                    }
-                }
+                self.try_push_reachable(piece.side, (x, y), (-1, direction));
+                self.try_push_reachable(piece.side, (x, y), (0, direction));
+                self.try_push_reachable(piece.side, (x, y), (1, direction));
+                self.try_push_reachable(piece.side, (x, y), (-1, 0));
+                self.try_push_reachable(piece.side, (x, y), (1, 0));
+                self.try_push_reachable(piece.side, (x, y), (0, -direction));
             }
             PieceType::King => {
-                if piece.side {
-                    if x >= 1 && y >= 1 {
-                        self.push_reachable(piece.side, (x - 1, y - 1));
-                    }
-                    if y >= 1 {
-                        self.push_reachable(piece.side, (x, y - 1));
-                    }
-                    if x + 1 <= 8 && y >= 1 {
-                        self.push_reachable(piece.side, (x + 1, y - 1));
-                    }
-                    if x >= 1 {
-                        self.push_reachable(piece.side, (x - 1, y));
-                    }
-                    if x + 1 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y));
-                    }
-                    if y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x, y + 1));
-                    }
-                    if x >= 1 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x - 1, y + 1));
-                    }
-                    if x + 1 <= 8 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y + 1));
-                    }
-                } else {
-                    if x >= 1 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x - 1, y + 1));
-                    }
-                    if y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x, y + 1));
-                    }
-                    if x + 1 <= 8 && y + 1 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y + 1));
-                    }
-                    if x >= 1 {
-                        self.push_reachable(piece.side, (x - 1, y));
-                    }
-                    if x + 1 <= 8 {
-                        self.push_reachable(piece.side, (x + 1, y));
-                    }
-                    if y >= 1 {
-                        self.push_reachable(piece.side, (x, y - 1));
-                    }
-                    if x >= 1 && y >= 1 {
-                        self.push_reachable(piece.side, (x - 1, y + 1));
-                    }
-                    if x + 1 <= 8 && y >= 1 {
-                        self.push_reachable(piece.side, (x + 1, y + 1));
-                    }
-                }
+                self.try_push_reachable(piece.side, (x, y), (-1, -1));
+                self.try_push_reachable(piece.side, (x, y), (0, -1));
+                self.try_push_reachable(piece.side, (x, y), (1, -1));
+                self.try_push_reachable(piece.side, (x, y), (-1, 0));
+                self.try_push_reachable(piece.side, (x, y), (1, 0));
+                self.try_push_reachable(piece.side, (x, y), (0, 1));
+                self.try_push_reachable(piece.side, (x, y), (-1, 1));
+                self.try_push_reachable(piece.side, (x, y), (1, 1));
             }
         }
     }
 
-    fn push_reachable(&mut self, side: bool, (x, y): (usize, usize)) -> bool {
-        match self.board[y][x] {
+    fn try_push_reachable(
+        &mut self,
+        side: bool,
+        (x, y): (usize, usize),
+        (offset_x, offset_y): (isize, isize),
+    ) -> bool {
+        if x as isize + offset_x > 8
+            || y as isize + offset_y > 8
+            || x as isize + offset_x < 0
+            || y as isize + offset_y < 0
+        {
+            return false;
+        }
+        let check_x = (x as isize + offset_x) as usize;
+        let check_y = (y as isize + offset_y) as usize;
+        match self.board[check_y][check_x] {
             Option::Some(piece) => {
                 if piece.side != side {
-                    self.reachable.push((x, y))
+                    self.reachable.push((check_x, check_y))
                 }
                 false
             }
             Option::None => {
-                self.reachable.push((x, y));
+                self.reachable.push((check_x, check_y));
                 true
             }
         }
