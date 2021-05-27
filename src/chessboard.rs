@@ -7,7 +7,6 @@ use crossterm::{
     QueueableCommand, Result,
 };
 use std::io::{stdout, Write};
-use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
 pub struct Chessboard {
@@ -18,7 +17,7 @@ pub struct Chessboard {
     /// Coordinate of the focused square now.
     focus: (usize, usize),
     reachable: Vec<(usize, usize)>,
-    captured: [HashSet<(usize, usize)>; 2]
+    captured: [Vec<PieceType>; 2]
 }
 
 impl Chessboard {
@@ -258,7 +257,7 @@ impl Chessboard {
                             if self.reachable.contains(&self.focus) {
                                 self.clear_piece(self.chosen)?;
                                 if let Some(piece) = self.get_piece(self.focus) {
-                                    self.captured[!piece.side as usize].insert(self.focus);
+                                    self.captured[!piece.side as usize].push(piece.r#type);
                                 }
                                 self.set_piece(self.focus, self.get_piece(self.chosen));
                                 self.set_piece(self.chosen, None);
@@ -577,6 +576,6 @@ pub fn new() -> Chessboard {
         chosen: (4, 8),
         focus: (4, 8),
         reachable: Vec::new(),
-        captured: [HashSet::new(), HashSet::new()]
+        captured: [Vec::new(), Vec::new()]
     }
 }
